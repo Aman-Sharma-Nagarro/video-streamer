@@ -1,5 +1,7 @@
 import unittest
 from camera import Camera
+import xmlrunner
+testRunner=xmlrunner.XMLTestRunner(output='.')
 
 class TestCamera(unittest.TestCase):
 
@@ -32,4 +34,4 @@ class TestCamera(unittest.TestCase):
             self.assertEqual(Camera.complex_logic(0), 0)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(testRunner)
