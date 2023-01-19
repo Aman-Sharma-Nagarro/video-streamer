@@ -14,7 +14,7 @@ stages:
       displayName: Build and Test
       pool:
         name: Azure Pipelines
-          vmImage: 'ubuntu-20.04'
+        vmImage: 'ubuntu-20.04'
       steps:
       - checkout: self
         fetchDepth: 1
