@@ -7,51 +7,54 @@ trigger:
     include:
     - refs/heads/master
 name: $(date:yyyyMMdd)$(rev:.r)
-jobs:
-- job: Phase_1
-  displayName: Build and Test
-  pool:
-    name: Azure Pipelines
-      vmImage: 'ubuntu-20.04'
-  steps:
-  - checkout: self
-    fetchDepth: 1
-  - task: UsePythonVersion@0
-    displayName: Use Python $(python.version)
-    inputs:
-      versionSpec: $(python.version)
-  - task: CmdLine@2
-    displayName: Install dependencies
-    inputs:
-      script: python -m pip install --upgrade pip && pip install -r requirements.txt
-  - task: CmdLine@2
-    displayName: unit-test
-    inputs:
-      script: python -m unittest test_camera.py > test-results.xml
-  - task: PublishTestResults@2
-    displayName: Publish Test Results test-results.xml
-    inputs:
-      testResultsFiles: test-results.xml
-      testRunTitle: Python $(python.version)
-- job: Phase_2
-  displayName: Publish
-  dependsOn: Phase_1
-  pool:
-    name: Azure Pipelines
-  steps:
-  - checkout: self
-    fetchDepth: 1
-  - task: UsePythonVersion@0
-    displayName: Use Python >= 3.6
-    inputs:
-      versionSpec: '>= 3.6'
-  - task: CmdLine@2
-    displayName: Build sdist
-    inputs:
-      script: python setup.py sdist
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: dist'
-    inputs:
-      PathtoPublish: dist
-      ArtifactName: dist
-...
+stages:
+  - stage: Python basics
+    jobs:
+    - job: Phase_1
+      displayName: Build and Test
+      pool:
+        name: Azure Pipelines
+          vmImage: 'ubuntu-20.04'
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: UsePythonVersion@0
+        displayName: Use Python $(python.version)
+        inputs:
+          versionSpec: $(python.version)
+      - task: CmdLine@2
+        displayName: Install dependencies
+        inputs:
+          script: python -m pip install --upgrade pip && pip install -r requirements.txt
+      - task: CmdLine@2
+        displayName: unit-test
+        inputs:
+          script: python -m unittest test_camera.py > test-results.xml
+      - task: PublishTestResults@2
+        displayName: Publish Test Results test-results.xml
+        inputs:
+          testResultsFiles: test-results.xml
+          testRunTitle: Python $(python.version)
+    - job: Phase_2
+      displayName: Publish
+      dependsOn: Phase_1
+      pool:
+        name: Azure Pipelines
+          vmImage: 'ubuntu-20.04'
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: UsePythonVersion@0
+        displayName: Use Python >= 3.6
+        inputs:
+          versionSpec: '>= 3.6'
+      - task: CmdLine@2
+        displayName: Build sdist
+        inputs:
+          script: python setup.py sdist
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: dist'
+        inputs:
+          PathtoPublish: dist
+          ArtifactName: dist
+    ...
