@@ -8,7 +8,7 @@ trigger:
     - refs/heads/master
 name: $(date:yyyyMMdd)$(rev:.r)
 stages:
-  - stage: Python basics
+  - stage: python basic setup steps
     jobs:
     - job: Phase_1
       displayName: Build and Test
