@@ -1,4 +1,29 @@
-# Agent Queue 'Azure Pipelines' was used with unrecognized Agent Specification, vmImage property must be specified to determine image - https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml#software
+# # Agent Queue 'Azure Pipelines' was used with unrecognized Agent Specification, vmImage property must be specified to determine image - https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml#software
+# jobs:
+# - job: Job_1
+#   displayName: Agent job 1
+#   pool:
+#     name: Azure Pipelines
+#   steps:
+#   - checkout: self
+#     fetchDepth: 1
+#   - task: Docker@0
+#     displayName: Build an image
+#     inputs:
+#       containerregistrytype: Container Registry
+#       dockerRegistryEndpoint: ce9f29f8-a0cd-449b-a26f-27ecbf099080
+#   - task: Docker@0
+#     displayName: Push an image
+#     inputs:
+#       azureContainerRegistry: docker.io
+#       containerregistrytype: Container Registry
+#       dockerRegistryEndpoint: ce9f29f8-a0cd-449b-a26f-27ecbf099080
+#       action: Push an image
+# ...
+
+pool:
+  vmImage: 'ubuntu-latest'
+
 resources:
   pipelines:
   - pipeline: video-streamer-packaging
@@ -7,25 +32,32 @@ resources:
       branches:
         include:
         - refs/heads/master
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: docker-hub-service-connection
+  imageRepository: amansharmanagarro/video-streamer
+  containerRegistry: docker.io
+  dockerfilePath: $(Build.SourcesDirectory)/Dockerfile
+  tag: $(Build.BuildId)
+
 name: $(date:yyyyMMdd)$(rev:.r)
-jobs:
-- job: Job_1
-  displayName: Agent job 1
-  pool:
-    name: Azure Pipelines
-  steps:
-  - checkout: self
-    fetchDepth: 1
-  - task: Docker@0
-    displayName: Build an image
-    inputs:
-      containerregistrytype: Container Registry
-      dockerRegistryEndpoint: ce9f29f8-a0cd-449b-a26f-27ecbf099080
-  - task: Docker@0
-    displayName: Push an image
-    inputs:
-      azureContainerRegistry: docker.io
-      containerregistrytype: Container Registry
-      dockerRegistryEndpoint: ce9f29f8-a0cd-449b-a26f-27ecbf099080
-      action: Push an image
-...
+
+stages:
+  - stage: Build
+    displayName: Build and push stage Image
+    jobs:  
+    - job: Build
+      displayName: Build Image
+      pool:
+        vmImage: $(vmImageName)
+      steps:
+      - task: Docker@2
+        displayName: Build and push an image to container registry
+        inputs:
+          command: buildAndPush
+          repository: $(imageRepository)
+          dockerfile: $(dockerfilePath)
+          containerRegistry: $(dockerRegistryServiceConnection)
+          tags: |
+            $(tag)
