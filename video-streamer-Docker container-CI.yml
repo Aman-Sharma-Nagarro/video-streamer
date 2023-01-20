@@ -1,0 +1,31 @@
+# Agent Queue 'Azure Pipelines' was used with unrecognized Agent Specification, vmImage property must be specified to determine image - https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml#software
+resources:
+  pipelines:
+  - pipeline: video-streamer-packaging
+    source: video-streamer-packaging
+    trigger:
+      branches:
+        include:
+        - refs/heads/master
+name: $(date:yyyyMMdd)$(rev:.r)
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    name: Azure Pipelines
+  steps:
+  - checkout: self
+    fetchDepth: 1
+  - task: Docker@0
+    displayName: Build an image
+    inputs:
+      containerregistrytype: Container Registry
+      dockerRegistryEndpoint: ce9f29f8-a0cd-449b-a26f-27ecbf099080
+  - task: Docker@0
+    displayName: Push an image
+    inputs:
+      azureContainerRegistry: docker.io
+      containerregistrytype: Container Registry
+      dockerRegistryEndpoint: ce9f29f8-a0cd-449b-a26f-27ecbf099080
+      action: Push an image
+...
